@@ -1,3 +1,5 @@
+import { dateFormat } from "../utils/dateFormat";
+
 interface IThought extends Document {
     thoughtText: string;
     createdAt: Date;
@@ -18,7 +20,7 @@ interface IThought extends Document {
       createdAt: {
         type: Date,
         default: Date.now,
-        get: (timestamp: Date) => timestamp.toLocaleString(), 
+        get: (timestamp: Date) => dateFormat(timestamp),
       },
       username: {
         type: String,

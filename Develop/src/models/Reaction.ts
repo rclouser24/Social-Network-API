@@ -1,6 +1,7 @@
 import { Schema, model, Document } from "mongoose";
+import { dateFormat } from "../utils/dateFormat";
 
-// Define Reaction Interface
+
 interface IReaction {
   reactionId: Schema.Types.ObjectId;
   reactionBody: string;
@@ -8,7 +9,7 @@ interface IReaction {
   createdAt: Date;
 }
 
-// Define Reaction Schema
+
 const ReactionSchema = new Schema<IReaction>(
   {
     reactionId: {
@@ -27,7 +28,7 @@ const ReactionSchema = new Schema<IReaction>(
     createdAt: {
       type: Date,
       default: Date.now,
-      get: (timestamp: Date) => timestamp.toLocaleString(), // Format date
+      get: (timestamp: Date) => dateFormat(timestamp),
     },
   },
   {

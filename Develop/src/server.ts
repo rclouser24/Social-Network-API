@@ -1,12 +1,13 @@
 import express from "express";
 import mongoose from "mongoose";
-import apiRoutes from "./routes/api";
+import apiRoutes from "./routes/api/index.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
-app.use(apiRoutes);
+
+app.use("/api", apiRoutes);
 
 mongoose
   .connect("mongodb://localhost:27017/socialNetworkDB")

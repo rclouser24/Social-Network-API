@@ -1,104 +1,76 @@
-import { User, Thought } from '../models/index.js';
-// get all users
-export const getUsers = async (_req, res) => {
+import { User } from "../models/User.js";
+import { Thought } from "../models/Thought.js";
+export const getAllUsers = async (_req, res) => {
     try {
-        const dbUserData = await User.find()
-            .select('-__v');
-        return res.json(dbUserData);
+        const users = await User.find().populate("thoughts").populate("friends");
+        return res.json(users);
     }
     catch (err) {
-        console.log(err);
-        return res.status(500).json(err);
+        return res.status(500).json({ error: "Failed to retrieve users", details: err });
     }
 };
-// get single user by id
-export const getSingleUser = async (req, res) => {
+export const getUserById = async (req, res) => {
     try {
-        const dbUserData = await User.findOne({ _id: req.params.userId })
-            .select('-__v')
-            .populate('friends')
-            .populate('thoughts');
-        if (!dbUserData) {
-            return res.status(404).json({ message: 'No user with this id!' });
-        }
-        return res.json(dbUserData);
+        const user = await User.findById(req.params.id).populate("thoughts").populate("friends");
+        if (!user)
+            return res.status(404).json({ error: "User not found" });
+        return res.json(user);
     }
     catch (err) {
-        console.log(err);
-        return res.status(500).json(err);
+        return res.status(500).json({ error: "Failed to retrieve user", details: err });
     }
 };
-// create a new user
 export const createUser = async (req, res) => {
     try {
-        const dbUserData = await User.create(req.body);
-        return res.json(dbUserData);
+        const newUser = await User.create(req.body);
+        return res.status(201).json(newUser);
     }
     catch (err) {
-        console.log(err);
-        return res.status(500).json(err);
+        return res.status(400).json({ error: "Failed to create user", details: err });
     }
 };
-// update a user
 export const updateUser = async (req, res) => {
     try {
-        const dbUserData = await User.findOneAndUpdate({ _id: req.params.userId }, {
-            $set: req.body,
-        }, {
-            runValidators: true,
-            new: true,
-        });
-        if (!dbUserData) {
-            return res.status(404).json({ message: 'No user with this id!' });
-        }
-        return res.json(dbUserData);
+        const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if (!updatedUser)
+            return res.status(404).json({ error: "User not found" });
+        return res.json(updatedUser);
     }
     catch (err) {
-        console.log(err);
-        return res.status(500).json(err);
+        return res.status(400).json({ error: "Failed to update user", details: err });
     }
 };
-// delete user (BONUS: and delete associated thoughts)
 export const deleteUser = async (req, res) => {
     try {
-        const dbUserData = await User.findOneAndDelete({ _id: req.params.userId });
-        if (!dbUserData) {
-            return res.status(404).json({ message: 'No user with this id!' });
-        }
-        // BONUS: get ids of user's `thoughts` and delete them all
-        await Thought.deleteMany({ _id: { $in: dbUserData.thoughts } });
-        return res.json({ message: 'User and associated thoughts deleted!' });
+        const user = await User.findByIdAndDelete(req.params.id);
+        if (!user)
+            return res.status(404).json({ error: "User not found" });
+        await Thought.deleteMany({ _id: { $in: user.thoughts } });
+        return res.json({ message: "User and associated thoughts deleted successfully" });
     }
     catch (err) {
-        console.log(err);
-        return res.status(500).json(err);
+        return res.status(500).json({ error: "Failed to delete user", details: err });
     }
 };
-// add friend to friend list
 export const addFriend = async (req, res) => {
     try {
-        const dbUserData = await User.findOneAndUpdate({ _id: req.params.userId }, { $addToSet: { friends: req.params.friendId } }, { new: true });
-        if (!dbUserData) {
-            return res.status(404).json({ message: 'No user with this id!' });
-        }
-        return res.json(dbUserData);
+        const user = await User.findByIdAndUpdate(req.params.userId, { $addToSet: { friends: req.params.friendId } }, { new: true });
+        if (!user)
+            return res.status(404).json({ error: "User not found" });
+        return res.json(user);
     }
     catch (err) {
-        console.log(err);
-        return res.status(500).json(err);
+        return res.status(500).json({ error: "Failed to add friend", details: err });
     }
 };
-// remove friend from friend list
 export const removeFriend = async (req, res) => {
     try {
-        const dbUserData = await User.findOneAndUpdate({ _id: req.params.userId }, { $pull: { friends: req.params.friendId } }, { new: true });
-        if (!dbUserData) {
-            return res.status(404).json({ message: 'No user with this id!' });
-        }
-        return res.json(dbUserData);
+        const user = await User.findByIdAndUpdate(req.params.userId, { $pull: { friends: req.params.friendId } }, { new: true });
+        if (!user)
+            return res.status(404).json({ error: "User not found" });
+        return res.json(user);
     }
     catch (err) {
-        console.log(err);
-        return res.status(500).json(err);
+        return res.status(500).json({ error: "Failed to remove friend", details: err });
     }
 };

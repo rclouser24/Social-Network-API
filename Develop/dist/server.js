@@ -1,12 +1,14 @@
-import express from 'express';
-import routes from './routes/index.js';
-import db from './config/connection.js';
-await db();
-const PORT = process.env.PORT || 3001;
+import express from "express";
+import mongoose from "mongoose";
+import apiRoutes from "./routes/api/index.js";
 const app = express();
-app.use(express.urlencoded({ extended: true }));
+const PORT = process.env.PORT || 3001;
 app.use(express.json());
-app.use(routes);
+app.use("/api", apiRoutes);
+mongoose
+    .connect("mongodb://localhost:27017/socialNetworkDB")
+    .then(() => console.log("✅ MongoDB Connected"))
+    .catch((err) => console.error("MongoDB connection error:", err));
 app.listen(PORT, () => {
-    console.log(`API server running on port ${PORT}!`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
